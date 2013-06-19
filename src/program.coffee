@@ -1,6 +1,9 @@
-io = require('socket.io').listen 8080
+'use strict'
 
-io.sockets.on 'connection', (socket)->
-  socket.emit 'news', { hello: 'world' }
-  socket.on 'japko', (data)->
-    console.log('dostalem japko od servera')
+config = require './config.js'
+
+client_server = require('./browser-proxy.js').init config
+client_server.connect()
+
+app_server = require('./app-proxy.js').init config
+app_server.connect()

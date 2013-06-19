@@ -1,12 +1,12 @@
-var io;
+'use strict';
+var app_server, client_server, config;
 
-io = require('socket.io').listen(8080);
+config = require('./config.js');
 
-io.sockets.on('connection', function(socket) {
-  socket.emit('news', {
-    hello: 'world'
-  });
-  return socket.on('japko', function(data) {
-    return console.log('dostalem japko od servera');
-  });
-});
+client_server = require('./browser-proxy.js').init(config);
+
+client_server.connect();
+
+app_server = require('./app-proxy.js').init(config);
+
+app_server.connect();
