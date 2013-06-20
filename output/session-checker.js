@@ -8,7 +8,7 @@ mongo = _mongo.MongoClient;
 mongoid = _mongo.ObjectID;
 
 exports.init = function(config) {
-  return function(sessionid, charid, callback, error_callbak) {
+  return function(sessionid, charid, callback, error_callback) {
     return mongo.connect(config.mongo_connection_string, function(err, db) {
       return db.collection('app.sessions', function(err, collection) {
         return collection.findOne({

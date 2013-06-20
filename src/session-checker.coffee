@@ -7,7 +7,7 @@ mongoid  = _mongo.ObjectID
 
 # checking than specific character belong to specific active session id
 exports.init = (config)->
-    (sessionid, charid, callback, error_callbak)->
+    (sessionid, charid, callback, error_callback)->
         mongo.connect config.mongo_connection_string, (err, db)->
             db.collection 'app.sessions', (err, collection)->
                 collection.findOne
