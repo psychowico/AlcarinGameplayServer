@@ -5,5 +5,7 @@ config = ->
     @app_port = 8081
     # mongo connection string
     @mongo_connection_string = 'mongodb://localhost/alcarin'
+    # socket.io log level
+    @log_level = 1 # 1 - least
 
 config.apply exports

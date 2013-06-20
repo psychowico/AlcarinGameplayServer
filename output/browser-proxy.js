@@ -17,10 +17,13 @@ exports.init = function(config) {
     }
 
     Proxy.prototype.connect = function() {
-      this.server = io.listen(config.client_port, function() {
+      var server;
+
+      this.server = server = io.listen(config.client_port, function() {
         return console.log("-- WebClient server ready, listening on " + config.client_port);
       });
-      return this.server.sockets.on('connection', this.on_client_connect);
+      server.sockets.on('connection', this.on_client_connect);
+      return server.set('log level', config.log_level);
     };
 
     Proxy.prototype.on_client_connect = function(socket) {

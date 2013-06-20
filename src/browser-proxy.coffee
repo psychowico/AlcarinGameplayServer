@@ -11,9 +11,11 @@ exports.init = (config)->
             @clients = []
 
         connect: ->
-            @server = io.listen config.client_port, ->
+            @server = server = io.listen config.client_port, ->
                 console.log "-- WebClient server ready, listening on #{config.client_port}"
-            @server.sockets.on 'connection', @on_client_connect
+            server.sockets.on 'connection', @on_client_connect
+            server.set 'log level', config.log_level
+
 
         on_client_connect: (socket)=>
             @clients.push new GameClient @, socket
