@@ -3,5 +3,7 @@ config = ->
     @client_port = 8080
     # php server will push events on this port, by using http protocol
     @app_port = 8081
+    # mongo connection string
+    @mongo_connection_string = 'mongodb://localhost/alcarin'
 
 config.apply exports
