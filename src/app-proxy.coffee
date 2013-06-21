@@ -1,16 +1,15 @@
 'use strict'
 
 net  = require 'net'
-JsonSocket = require 'json-socket'
 
-exports.init = (config)->
+exports.init = (EventsBus, config)->
     class Proxy
 
         constructor: ->
             @clients = []
 
         on_connect: (socket)=>
-            @clients.push new AppClient @, new JsonSocket socket
+            @clients.push new AppClient @, socket
 
         connect: ->
             server = net.createServer().listen config.app_port, '127.0.0.1', ->
@@ -20,12 +19,13 @@ exports.init = (config)->
     class AppClient
 
         constructor: (@proxy, @socket)->
-            @socket.on 'message', @on_message
+            @socket.on 'data', @on_data
             @log 'connected'
 
-        on_message: (data)=>
-            @log 'new data'
-            console.log data
+        on_data: (data)=>
+            @log 'Data recived.'
+            json = data.toString()
+            EventsBus.emit 'events.delivery', JSON.parse json
 
         log: (text)->
             console.log "AppClient: #{text}."

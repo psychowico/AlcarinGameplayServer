@@ -3,12 +3,23 @@
 io       = require 'socket.io'
 cookie   = require 'cookie'
 
-exports.init = (config)->
+exports.init = (EventsBus, config)->
     check_session = require('./session-checker.coffee').init config
     class Proxy
 
         constructor: ->
-            @clients = []
+            @clients = {}
+            @__ungrouped = []
+            EventsBus.on 'events.delivery', @on_events_delivery
+
+        on_events_delivery: (events)=>
+            # for now it are translated event, in speaker
+            # language - but our goal is getting only tagid's
+            # and translate them for specific client
+            for e in events
+                ev = e['event']
+                for charid in e.ids
+                    @clients[charid]?.send_event ev
 
         connect: ->
             @server = server = io.listen config.client_port, ->
@@ -17,15 +28,26 @@ exports.init = (config)->
             server.set 'log level', config.log_level
 
         on_client_connect: (socket)=>
-            @clients.push new GameClient @, socket
+            @__ungrouped.push new GameClient @, socket
+
+
+        authorizeClient: (client)=>
+            index = @__ungrouped.indexOf client
+            @__ungrouped.splice index, 1
+            @clients[client.charid] = client
 
         removeClient: (client)=>
-            index = @clients.indexOf client
-            @clients.splice index, 1
+            id = client.charid
+            if id?
+                delete @clients[client.charid]
+            else
+                index = @__ungrouped.indexOf client
+                @__ungrouped.splice index, 1
 
     class GameClient
         @session_id = null
         @authorized = false
+        @charid     = null
 
         log: (text)->
             console.log "WebBrowser client '#{@session_id}': #{text}."
@@ -38,13 +60,17 @@ exports.init = (config)->
 
             @log "connected"
 
+        send_event: (ev)=>
+            @socket.emit 'game-event', ev if @authorized
+
         # client is authorized by his session id. we need check that this session id is
         # valid for specific character.
         on_auth: (data)=>
             session = @session_id
-            char = data.charid
-            check_session session, char, =>
+            @charid  = data.charid
+            check_session session, @charid, =>
                 @authorized = true
+                @proxy.authorizeClient @
                 @log 'authorized'
             , (err)=>
                 @authorized = false
