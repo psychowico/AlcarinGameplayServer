@@ -1,10 +1,11 @@
 'use strict'
 
-config    = require './config.coffee'
-EventsBus = require './EventsBus.coffee'
+exports.start = ->
+    config    = require './config'
+    EventsBus = require './EventsBus'
 
-client_server = require('./browser-proxy.coffee').init EventsBus, config
-client_server.connect()
+    client_server = require('./browser-proxy').init EventsBus, config
+    client_server.connect()
 
-app_server = require('./app-proxy.coffee').init EventsBus, config
-app_server.connect()
+    app_server = require('./app-proxy').init EventsBus, config
+    app_server.connect()

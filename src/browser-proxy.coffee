@@ -4,7 +4,7 @@ io       = require 'socket.io'
 cookie   = require 'cookie'
 
 exports.init = (EventsBus, config)->
-    check_session = require('./session-checker.coffee').init config
+    check_session = require('./session-checker').init config
     class Proxy
 
         constructor: ->
