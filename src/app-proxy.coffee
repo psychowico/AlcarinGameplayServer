@@ -16,14 +16,23 @@ exports.init = (EventsBus, config)->
                     console.log "-- App server ready, listening on #{config.app_port}"
             server.on 'connection', @on_connect
 
+        removeClient: (client)=>
+            ind = @clients.indexOf client.socket
+            @clients.slice ind, 1
+
     class AppClient
 
         constructor: (@proxy, @socket)->
             @socket.on 'data', @on_data
+            socket.on 'end', @on_disconnect
             @log 'connected'
 
+        on_disconnect: =>
+            @log 'disconnected'
+            @proxy.removeClient @
+
         on_data: (data)=>
-            @log 'Data recived.'
+            @log 'data recived'
             json = data.toString()
             EventsBus.emit 'events.delivery', JSON.parse json
 
