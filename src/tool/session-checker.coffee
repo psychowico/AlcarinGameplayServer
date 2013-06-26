@@ -22,9 +22,7 @@ class SessionChecker
             params =
                 _id: doc.player
                 chars: charid
-            console.log params
             db.collection('users').count params, (err, size)-> callback err, size > 0
-
 
     check: (sessionid, charid, callback, error_callback)=>
         query = {_id: sessionid, name: 'alcarin'}
