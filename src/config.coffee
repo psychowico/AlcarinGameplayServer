@@ -9,3 +9,5 @@ config = ->
     @log_level = 1 # 1 - least
 
 config.apply exports
+
+console.log 'initalized configuration..'
