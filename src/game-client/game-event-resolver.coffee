@@ -26,6 +26,7 @@ resolve_arg  = (char, arg, resolver, done)->
         else
             deferred.resolve [char, arg]
     deferred.promise
+
 resolve_text = (events, lang)->
     def = Q.defer()
     tags = []
@@ -44,30 +45,40 @@ resolve_text = (events, lang)->
         def.resolve()
     def.promise
 
+calc_args = (text)->
+    index = 0
+    index++ until text.indexOf "%#{index}" is -1
+    return index + 1
+
 module.exports = (char, events, done_callback)->
     _args = []
     lang = char.lang or 'pl'
 
     tasks = []
-    tasks.push Q resolve_text events, lang
+    texts = resolve_text events, lang
 
     task = (_resolver)->
         (char, arg, done) -> resolve_arg char, arg, _resolver, done
 
-    for ev in events
-        for arg, ind in ev.args when typeof arg is 'object'
-            promise = Q [char, arg]
-            for resolver, key in resolvers
-                promise = promise.spread task resolver
-            scope = (_ev, _promise, _ind)->
-                return _promise.spread (char, arg, result)->
-                    if result is true or not result?
-                        _ev.args[_ind] = arg
-                    else
-                        _ev.args[_ind] =
-                            text  : result
-                            __base: arg
-                    return [char, arg]
-            tasks.push scope ev, promise, ind
-    Q.all(tasks).then ->
-        done_callback events
+    texts.then =>
+        for ev in events
+            need_arg_count = calc_args ev.text
+            index = 0
+            for arg, ind in ev.args when typeof arg is 'object'
+                promise = Q [char, arg]
+                for resolver, key in resolvers
+                    promise = promise.spread task resolver
+
+                tasks.push do (ev, promise, ind)->
+                    return promise.spread (char, arg, result)->
+                        if result is true or not result?
+                            ev.args[ind] = arg
+                        else
+                            ev.args[ind] =
+                                text  : result
+                                __base: arg
+                        return [char, arg]
+                index++
+                break if index >= need_arg_count
+        Q.all(tasks).then ->
+            done_callback events
