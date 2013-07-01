@@ -3,7 +3,7 @@
 net    = require 'net'
 
 config = require '../config'
-EventsBus = require '../EventsBus'
+EventsBus = require '../events-bus'
 
 class Proxy
 
@@ -20,9 +20,11 @@ class Proxy
 
     removeClient: (client)=>
         ind = @clients.indexOf client.socket
-        @clients.slice ind, 1
+        @clients.splice ind, 1
 
 class AppClient
+
+    buffer: ''
 
     constructor: (@proxy, @socket)->
         @socket.on 'data', @on_data
@@ -34,9 +36,18 @@ class AppClient
         @proxy.removeClient @
 
     on_data: (data)=>
-        @log 'data recived'
-        json = data.toString()
-        EventsBus.emit 'events.delivery', JSON.parse json
+        # we need buffering data until we got agreed end of buffer signal (\0)
+        _log = 'data received.. '
+        subbuffer = data.toString()
+        if subbuffer[subbuffer.length - 1] == '\0'
+            _log += 'resolving'
+            json = JSON.parse @buffer + subbuffer.substr 0, subbuffer.length - 1
+            EventsBus.emit 'events.delivery', json
+            @buffer = ''
+        else
+            _log += 'buffering.'
+            @buffer += subbuffer
+        @log _log
 
     log: (text)->
         console.log "AppClient: #{text}."

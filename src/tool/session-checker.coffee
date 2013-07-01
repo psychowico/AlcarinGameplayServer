@@ -1,8 +1,6 @@
 'use strict'
 
-config = require '../config'
-db     = require('mongoskin').db config.mongo_connection_string
-ObjectId = db.ObjectID.createFromHexString
+db = require './mongo'
 
 class SessionChecker
     fields:
@@ -11,7 +9,7 @@ class SessionChecker
         player  : 1
 
     _check_permission: (doc, charid, callback)->
-        charid = ObjectId charid
+        charid = db.ObjectId charid
         modified = doc.modified.getTime() / 1000
         now = new Date()
         if modified + parseInt doc.lifetime < (now.getTime() / 1000)
