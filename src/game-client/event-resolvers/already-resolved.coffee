@@ -1,9 +1,6 @@
 'use strict'
 
-module.exports = (char, arg, callback)->
-    if arg.__base?
-        callback true
-    else
-        callback()
+module.exports = (char, arg)->
+    return 'arg.resolved' if arg.__base?
 
 module.exports.priority = 100

@@ -1,49 +1,54 @@
 'use strict'
 
-io       = require 'socket.io'
+###
+This server listening for webbrowser connection. For any connection it
+generate GameClient object. It used socket.io for communication.
+###
 
-config    = require '../config'
-EventsBus = require '../events-bus'
+io         = require 'socket.io'
+config     = require '../config'
+EventsBus  = require '../events-bus'
 GameClient = require '../game-client'
 
-class Proxy
+class BrowserProxy
+    clients         : {}
+    ungroupedClients: []
 
-    constructor: ->
-        @clients = {}
-        @__ungrouped = []
-        EventsBus.on 'events.delivery', @on_events_delivery
-        EventsBus.on 'web-client-disconnected', @removeClient
-        EventsBus.on 'web-client.authorized', @authorizeClient
-
-    on_events_delivery: (data_arr)=>
-        for data in data_arr
-            if data.$reset
-                for charid in data.$ids
-                    @clients[charid]?.reset_events data.$events
-            else
-                for charid in data.$ids
-                    @clients[charid]?.send_event data.$event
-
-    connect: ->
+    start: ->
         @server = server = io.listen config.client_port, ->
             console.log "-- WebClient server ready, listening on #{config.client_port}"
         server.set 'log level', config.log_level
-        server.sockets.on 'connection', @on_client_connect
+        server.sockets.on 'connection', @onClientConnected
 
-    on_client_connect: (socket)=>
-        @__ungrouped.push new GameClient @, socket
+        EventsBus.on 'web-client.disconnected', @onClientDisconnected
+        EventsBus.on 'web-client.authorized', @onClientAuthorized
+        EventsBus.on 'events.delivery', @processEventsDelivery
 
-    authorizeClient: (client)=>
-        index = @__ungrouped.indexOf client
-        @__ungrouped.splice index, 1
+    onClientConnected: (socket)=>
+        @ungroupedClients.push new GameClient @, socket
+
+    onClientAuthorized: (client)=>
+        index = @ungroupedClients.indexOf client
+        @ungroupedClients.splice index, 1
         @clients[client.charid] = client
 
-    removeClient: (client)=>
+    onClientDisconnected: (client)=>
         id = client.charid
         if id?
             delete @clients[client.charid]
         else
-            index = @__ungrouped.indexOf client
-            @__ungrouped.splice index, 1
+            index = @ungroupedClients.indexOf client
+            @ungroupedClients.splice index, 1
 
-module.exports = new Proxy()
+    # we got events pack from app server. we need process it and forward it to
+    # connected and authorized browser clients.
+    processEventsDelivery: (data)=>
+        for dataPack in data
+            if dataPack.$reset
+                for charid in dataPack.$ids
+                    @clients[charid]?.resetEvents dataPack.$events
+            else
+                for charid in dataPack.$ids
+                    @clients[charid]?.sendEvent dataPack.$event
+
+module.exports = BrowserProxy

@@ -1,41 +1,51 @@
 'use strict'
 
+###
+providing method that from checking that specfic character belong to
+specific session id player. returing Q promise.
+###
+
 db = require './mongo'
+Q  = require 'q'
 
-class SessionChecker
-    fields:
-        lifetime: 1
-        modified: 1
-        player  : 1
+FIELDS =
+    lifetime: 1
+    modified: 1
+    player  : 1
 
-    _check_permission: (doc, charid, callback)->
-        charid = db.ObjectId charid
-        modified = doc.modified.getTime() / 1000
-        now = new Date()
-        if modified + parseInt doc.lifetime < (now.getTime() / 1000)
-            callback null, false
+checkPermission = (doc, charid)->
+    deferred = Q.defer()
+
+    charid   = db.ObjectId charid
+    modified = doc.modified.getTime() / 1000
+    now      = new Date()
+    sessionExpired = modified + parseInt doc.lifetime < (now.getTime() / 1000)
+    if sessionExpired
+        deferred.reject 'Session expired.'
+    else
+        params =
+            _id: doc.player
+            chars: charid
+        processQuery = Q.ninvoke db.collection('users'), 'count', params
+        processQuery.fail deferred.reject
+
+        processQuery.then (size)->
+            charBelongToRelPlayer = size > 0
+            if charBelongToRelPlayer
+                deferred.resolve()
+            else deferred.reject 'Char not belong to session related player.'
+
+    deferred.promise
+
+check = (sessionid, charid)=>
+    deffered = Q.defer()
+    query = {_id: sessionid, name: 'alcarin'}
+    db.collection('app.sessions').findOne query, FIELDS, (err, session)=>
+        if err then return deffered.reject err
+        if session?
+            checkPermission(session, charid).then deffered.resolve, deffered.reject
         else
-            # this is active session. we need be sure
-            # that requested character belong to session owner
-            params =
-                _id: doc.player
-                chars: charid
-            db.collection('users').count params, (err, size)-> callback err, size > 0
+            deffered.reject 'Specific session not exists. Failed access.'
+    deffered.promise
 
-    check: (sessionid, charid, callback, error_callback)=>
-        query = {_id: sessionid, name: 'alcarin'}
-        db.collection('app.sessions').findOne query, @fields, (err, session)=>
-            error_callback err if err
-            if session?
-                @_check_permission session, charid, (err, result)->
-                    if err
-                        error_callback err
-                    else if result
-                        # success!
-                        callback()
-                    else
-                        error_callback 'Session expired.'
-            else
-                error_callback 'Specific session not exists. Failed access.'
-
-module.exports = new SessionChecker()
+module.exports = check

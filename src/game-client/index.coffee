@@ -1,57 +1,81 @@
 'use strict'
 
+###
+This module return class that represnt connection with one game webbrowser client.
+It is related with one browser tab and one character. Connection must be authenticated
+by php session id (related with choosed character player)
+###
+
+# requires
+
 cookie        = require 'cookie'
-check_session = require('../tool/session-checker').check
+checkSession  = require '../tool/session-checker'
 EventsBus     = require '../events-bus'
+resolveEvents = require('./game-events-resolver').resolveAll
 Character     = require './character.coffee'
-resolveEvents  = require './game-event-resolver'
 
-module.exports =
+# module code
+
 class GameClient
-    session_id: null
-    authorized: false
+    sessionId : null
     character : null
-    charid : null
+    charid    : null
+    authorized: false
 
-    send_event: (ev, need_reset)=>
+    constructor: (@proxy, @socket)->
+        cookies    = cookie.parse @socket.handshake.headers.cookie
+        @sessionId = cookies.alcarin
+        @socket.on 'auth', @onAuth
+        @socket.on 'disconnect', @onDisconnect
+
+        @log "connected"
+
+    log: (text)->
+        console.log "WebBrowser client '#{@sessionId}': #{text}."
+
+    sendEvent: (gameEvent, need_reset)=>
         if @authorized
             # we need first resolve events before sending it to client
-            resolveEvents @character, [ev], (ev)=>
-                @socket.emit 'game-event', ev[0]
+            @character.then (_char)=>
+                eventResolving = resolveEvents _char, [gameEvent]
+                eventResolving.then (gameEventsPack)=>
+                    resolvedGameEvent = gameEventsPack[0]
+                    @socket.emit 'game-event', resolvedGameEvent
 
-    reset_events: (events)=>
+    resetEvents: (events)=>
         if @authorized
-            # we need first resolve events before sending it to client
-            resolveEvents @character, events, (events)=>
-                @socket.emit 'reset-events', events
-
+            @character.then (_char)=>
+                # we need first resolve events before sending it to client
+                eventResolving = resolveEvents _char, events
+                eventResolving.then (gameEventsPack)=>
+                    @socket.emit 'reset-events', gameEventsPack
 
     # client is authorized by his session id. we need check that this session id is
     # valid for specific character.
-    on_auth: (data)=>
-        session = @session_id
-        @character = new Character data.charid
+    onAuth: (data)=>
+        session = @sessionId
+        @character = Character.fromId data.charid
         @charid    = data.charid
-        check_session session, data.charid, =>
+
+        # if we can not fetch character data we can not continue
+        @character.fail @manualDisconnect
+
+        checking = checkSession session, data.charid
+        checking.then =>
             @authorized = true
             EventsBus.emit 'web-client.authorized', @
             @socket.emit 'authorized'
             @log 'authorized'
-        , (err)=>
+        checking.fail (err)=>
             @authorized = false
-            console.error err
+            @log err
 
-    on_disconnect: =>
+    manualDisconnect: =>
+
+    onDisconnect: =>
         @log "disconnected"
         EventsBus.emit 'web-client.disconnected', @
 
-    log: (text)->
-        console.log "WebBrowser client '#{@session_id}': #{text}."
+# exports
 
-    constructor: (@proxy, @socket)->
-        cookies = cookie.parse @socket.handshake.headers.cookie
-        @session_id = cookies.alcarin
-        @socket.on 'auth', @on_auth
-        @socket.on 'disconnect', @on_disconnect
-
-        @log "connected"
+module.exports = GameClient

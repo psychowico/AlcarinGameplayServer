@@ -1,7 +1,14 @@
 'use strict'
 
-client_server = require('./server/browser')
-client_server.connect()
+###
+Starting GameClientServer and GameAppServer
+###
 
-app_server = require('./server/app')
-app_server.connect()
+GameClientServer = require './server/browser'
+GameAppServer    = require './server/app'
+
+client_server = new GameClientServer()
+client_server.start()
+
+app_server = new GameAppServer()
+app_server.start()
