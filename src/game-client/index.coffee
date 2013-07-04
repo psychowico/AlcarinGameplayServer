@@ -36,18 +36,18 @@ class GameClient
     sendEvent: (gameEvent, need_reset)=>
         if @authorized
             # we need first resolve events before sending it to client
-            @character.then (_char)=>
+            @character.done (_char)=>
                 eventResolving = resolveEvents _char, [gameEvent]
-                eventResolving.then (gameEventsPack)=>
+                eventResolving.done (gameEventsPack)=>
                     resolvedGameEvent = gameEventsPack[0]
                     @socket.emit 'game-event', resolvedGameEvent
 
     resetEvents: (events)=>
         if @authorized
-            @character.then (_char)=>
+            @character.done (_char)=>
                 # we need first resolve events before sending it to client
                 eventResolving = resolveEvents _char, events
-                eventResolving.then (gameEventsPack)=>
+                eventResolving.done (gameEventsPack)=>
                     @socket.emit 'reset-events', gameEventsPack
 
     # client is authorized by his session id. we need check that this session id is
@@ -61,7 +61,7 @@ class GameClient
         @character.fail @manualDisconnect
 
         checking = checkSession session, data.charid
-        checking.then =>
+        checking.done =>
             @authorized = true
             EventsBus.emit 'web-client.authorized', @
             @socket.emit 'authorized'
@@ -71,6 +71,7 @@ class GameClient
             @log err
 
     manualDisconnect: =>
+        @log 'heeeeeeeerrrrrrrreeeeeeee'
 
     onDisconnect: =>
         @log "disconnected"

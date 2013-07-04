@@ -43,12 +43,16 @@ class BrowserProxy
     # we got events pack from app server. we need process it and forward it to
     # connected and authorized browser clients.
     processEventsDelivery: (data)=>
+        count = 0
         for dataPack in data
             if dataPack.$reset
                 for charid in dataPack.$ids
+                    count++ if @clients[charid]?
                     @clients[charid]?.resetEvents dataPack.$events
             else
                 for charid in dataPack.$ids
+                    count++ if @clients[charid]?
                     @clients[charid]?.sendEvent dataPack.$event
+        console.log "Forwarding GameEvent struct to #{count} clients."
 
 module.exports = BrowserProxy

@@ -14,7 +14,7 @@ exports.resolveTag = (tag)->
     deferred = Q.defer()
 
     fetching = Q.ninvoke db.collection('translations'), 'findOne', {_id: tag}
-    fetching.then (result)-> deferred.resolve result?.val or ''
+    fetching.done (result)-> deferred.resolve result?.val or ''
     fetching.fail -> deferred.resolve ''
 
     deferred.promise
@@ -29,7 +29,7 @@ exports.resolveTags = (tags)->
 
     query = db.collection('translations').find { _id: {$in: tags} }
     fetching = Q.ninvoke query, 'toArray'
-    fetching.then (result)->
+    fetching.done (result)->
         result = result or []
         for obj in result
             response[obj._id] = obj.val

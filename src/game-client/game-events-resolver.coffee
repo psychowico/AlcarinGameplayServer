@@ -33,8 +33,8 @@ resolveTexts = (events, lang)->
         dict[key].push ev
         tags.push key
 
-    resolving = resolveTags(tags)
-    resolving.then (result)->
+    resolving = resolveTags tags
+    resolving.done (result)->
         for key, _events of dict
             text = result[key]
             for ev in _events
@@ -58,7 +58,7 @@ resolveGameEventArg = (char, gameEvent, gameEventArg)->
             console.error 'Error while resolving GameEvent argument: #{err}'
             resolveStack()
 
-    resolveStack().then (val)->
+    resolveStack().done (val)->
         if val == 'arg.resolved'
             deferred.reject()
         else
@@ -79,9 +79,8 @@ resolveAll = (_char, events)=>
     deferred = Q.defer()
     lang = _char.lang or 'pl'
     tasks = []
-    texts = resolveTexts events, lang
 
-    texts.then =>
+    resolveTexts(events, lang).done =>
         for gameEvent in events
             gameEventTasks = []
             for i in [0..gameEvent.args.length - 1]
@@ -99,7 +98,7 @@ resolveAll = (_char, events)=>
                     gameEventTasks.push resolvingArgument
                     tasks.push resolvingArgument
             do (gameEvent, gameEventTasks)->
-                Q.allSettled(gameEventTasks).then (results)->
+                Q.allSettled(gameEventTasks).done (results)->
                     # if any of argument are resolved properly - it's mean
                     # we have some changes in GameEvent and need save it.
                     for result in results
@@ -107,7 +106,8 @@ resolveAll = (_char, events)=>
                             saveGameEvent _char, gameEvent
                             break
 
-        Q.all(tasks).fin -> deferred.resolve events
+        resolveAllTasks = -> deferred.resolve events
+        Q.all(tasks).done resolveAllTasks, resolveAllTasks
 
     deferred.promise
 

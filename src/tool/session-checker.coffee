@@ -29,7 +29,7 @@ checkPermission = (doc, charid)->
         processQuery = Q.ninvoke db.collection('users'), 'count', params
         processQuery.fail deferred.reject
 
-        processQuery.then (size)->
+        processQuery.done (size)->
             charBelongToRelPlayer = size > 0
             if charBelongToRelPlayer
                 deferred.resolve()
@@ -43,7 +43,7 @@ check = (sessionid, charid)=>
     db.collection('app.sessions').findOne query, FIELDS, (err, session)=>
         if err then return deffered.reject err
         if session?
-            checkPermission(session, charid).then deffered.resolve, deffered.reject
+            checkPermission(session, charid).done deffered.resolve, deffered.reject
         else
             deffered.reject 'Specific session not exists. Failed access.'
     deffered.promise
