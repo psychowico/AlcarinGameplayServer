@@ -18,6 +18,8 @@ class AppProxy
         server = net.createServer().listen config.app_port, '127.0.0.1', ->
             console.log "-- App server ready, listening on #{config.app_port}"
         server.on 'connection', @onAppConnected
+        server.on 'error', (err)->
+            console.log  "Port #{config.app_port} is in use. Can not continue." if err.code == 'EADDRINUSE'
         EventsBus.on 'app-client.disconnected', @onAppDisconnected
 
     onAppConnected: (socket)=>
