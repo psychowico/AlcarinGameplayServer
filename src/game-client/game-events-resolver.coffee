@@ -10,6 +10,7 @@
 Q           = require 'q'
 resolveTags = require('../tool/tags-resolver').resolveTags
 db          = require '../tool/mongo'
+log         = require '../logger'
 
 # let load all game events resolvers. event resolver should
 # resolve event to text, or return false/nothing
@@ -55,7 +56,7 @@ resolveGameEventArg = (char, gameEvent, gameEventArg)->
         resolving = Q resolver char, gameEventArg
 
         resolving.then resolveStack, (err)->
-            console.error 'Error while resolving GameEvent argument: #{err}'
+            log.error 'Error while resolving GameEvent argument: #{err}'
             resolveStack()
 
     resolveStack().done (val)->

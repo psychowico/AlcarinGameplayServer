@@ -4,11 +4,13 @@
 Starting GameClientServer and GameAppServer
 ###
 
+log              = require './logger'
 GameClientServer = require './server/browser'
 GameAppServer    = require './server/app'
+repl             = require './tool/repl-support'
 
 client_server = new GameClientServer()
-client_server.start()
-
 app_server = new GameAppServer()
-app_server.start()
+
+client_server.start().then(app_server.start).done ->
+    repl.setHook()

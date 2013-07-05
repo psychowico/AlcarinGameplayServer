@@ -6,6 +6,8 @@
         "socket.io" : "<=1.0.0",
         "cookie"    : "*",
         "mongoskin" : "*",
-        "q"         : "*"
+        "q"         : "*",
+        "winston"   : "*",
+        "keypress"  : "0.1.0"
     }
 }

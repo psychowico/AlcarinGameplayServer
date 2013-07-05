@@ -13,6 +13,7 @@ checkSession  = require '../tool/session-checker'
 EventsBus     = require '../events-bus'
 resolveEvents = require('./game-events-resolver').resolveAll
 Character     = require './character.coffee'
+log           = require '../logger'
 
 # module code
 
@@ -30,8 +31,8 @@ class GameClient
 
         @log "connected"
 
-    log: (text)->
-        console.log "WebBrowser client '#{@sessionId}': #{text}."
+    log: (text, type = 'info')->
+        log[type] "WebBrowser client '#{@sessionId}': #{text}."
 
     sendEvent: (gameEvent, need_reset)=>
         if @authorized
@@ -60,18 +61,18 @@ class GameClient
         # if we can not fetch character data we can not continue
         @character.fail @manualDisconnect
 
-        checking = checkSession session, data.charid
-        checking.done =>
+        sessionChecked = =>
             @authorized = true
             EventsBus.emit 'web-client.authorized', @
             @socket.emit 'authorized'
             @log 'authorized'
-        checking.fail (err)=>
-            @authorized = false
-            @log err
 
-    manualDisconnect: =>
-        @log 'heeeeeeeerrrrrrrreeeeeeee'
+        checkSession(session, data.charid).done sessionChecked, @manualDisconnect
+
+    manualDisconnect: (reason)=>
+        @authorized = false
+        @socket.disconnect()
+        @log reason
 
     onDisconnect: =>
         @log "disconnected"

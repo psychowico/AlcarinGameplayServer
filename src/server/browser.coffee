@@ -9,20 +9,27 @@ io         = require 'socket.io'
 config     = require '../config'
 EventsBus  = require '../events-bus'
 GameClient = require '../game-client'
+Q          = require 'q'
+log        = require '../logger'
 
 class BrowserProxy
     clients         : {}
     ungroupedClients: []
 
     start: ->
+        deferred = Q.defer()
+
         @server = server = io.listen config.client_port, ->
-            console.log "-- WebClient server ready, listening on #{config.client_port}"
+            deferred.resolve server
+            log.info "-- WebClient server ready, listening on #{config.client_port}"
         server.set 'log level', config.log_level
         server.sockets.on 'connection', @onClientConnected
 
         EventsBus.on 'web-client.disconnected', @onClientDisconnected
         EventsBus.on 'web-client.authorized', @onClientAuthorized
         EventsBus.on 'events.delivery', @processEventsDelivery
+
+        deferred.promise
 
     onClientConnected: (socket)=>
         @ungroupedClients.push new GameClient @, socket
@@ -53,6 +60,6 @@ class BrowserProxy
                 for charid in dataPack.$ids
                     count++ if @clients[charid]?
                     @clients[charid]?.sendEvent dataPack.$event
-        console.log "Forwarding GameEvent struct to #{count} clients."
+        log.info "Forwarding GameEvent struct to #{count} clients."
 
 module.exports = BrowserProxy

@@ -9,18 +9,26 @@ net       = require 'net'
 AppClient = require '../app-client'
 config    = require '../config'
 EventsBus = require '../events-bus'
+Q         = require 'q'
+log       = require '../logger'
 
 class AppProxy
 
     clients : []
 
-    start: ->
+    start: =>
+        deferred = Q.defer()
+
         server = net.createServer().listen config.app_port, '127.0.0.1', ->
-            console.log "-- App server ready, listening on #{config.app_port}"
+            deferred.resolve server
+            log.info "-- App server ready, listening on #{config.app_port}"
         server.on 'connection', @onAppConnected
         server.on 'error', (err)->
-            console.log  "Port #{config.app_port} is in use. Can not continue." if err.code == 'EADDRINUSE'
+            deferred.reject err
+            log.error  "Port #{config.app_port} is in use. Can not continue." if err.code == 'EADDRINUSE'
         EventsBus.on 'app-client.disconnected', @onAppDisconnected
+
+        deferred.promise
 
     onAppConnected: (socket)=>
         @clients.push new AppClient @, socket

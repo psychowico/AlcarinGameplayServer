@@ -1,2 +1,2 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-coffee "$DIR/../src/index.coffee"
+coffee "$DIR/../src/index.coffee" --use_strict

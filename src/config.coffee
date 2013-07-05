@@ -1,3 +1,5 @@
+log = require './logger'
+
 config = ->
     # web browser will fetch for events on this
     @client_port = 8080
@@ -11,4 +13,4 @@ config = ->
 
 config.apply exports
 
-console.log 'initalized configuration..'
+log.info 'initalized configuration..'

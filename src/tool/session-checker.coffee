@@ -29,11 +29,12 @@ checkPermission = (doc, charid)->
         processQuery = Q.ninvoke db.collection('users'), 'count', params
         processQuery.fail deferred.reject
 
-        processQuery.done (size)->
+        processQuery.then (size)->
             charBelongToRelPlayer = size > 0
             if charBelongToRelPlayer
                 deferred.resolve()
-            else deferred.reject 'Char not belong to session related player.'
+            else
+                deferred.reject 'Char not belong to session related player.'
 
     deferred.promise
 

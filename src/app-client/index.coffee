@@ -5,6 +5,7 @@ This module return class that represnt connection with one game php app client.
 ###
 
 EventsBus     = require '../events-bus'
+log           = require '../logger'
 
 class AppClient
     buffer: ''
@@ -14,8 +15,8 @@ class AppClient
         @socket.on 'end', @onDisconnect
         @log 'connected'
 
-    log: (text)->
-        console.log "AppClient: #{text}."
+    log: (text, type = 'info')->
+        log[type] "AppClient: #{text}."
 
     onDisconnect: =>
         @log 'disconnected'
