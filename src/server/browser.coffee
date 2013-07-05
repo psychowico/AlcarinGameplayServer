@@ -5,12 +5,14 @@ This server listening for webbrowser connection. For any connection it
 generate GameClient object. It used socket.io for communication.
 ###
 
-io         = require 'socket.io'
+wildcard   = require 'socket.io-wildcard'
+io         = wildcard require 'socket.io'
 config     = require '../config'
 EventsBus  = require '../events-bus'
 GameClient = require '../game-client'
 Q          = require 'q'
 log        = require '../logger'
+
 
 class BrowserProxy
     clients         : {}

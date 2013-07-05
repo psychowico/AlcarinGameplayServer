@@ -10,10 +10,12 @@ by php session id (related with choosed character player)
 
 cookie        = require 'cookie'
 checkSession  = require '../tool/session-checker'
-EventsBus     = require '../events-bus'
 resolveEvents = require('./game-events-resolver').resolveAll
-Character     = require './character.coffee'
 log           = require '../logger'
+
+EventsBus           = require '../events-bus'
+Character           = require './character.coffee'
+GameEventsResponder = require('../game-events-responder')
 
 # module code
 
@@ -22,18 +24,20 @@ class GameClient
     character : null
     charid    : null
     authorized: false
+    responder : null
 
     constructor: (@proxy, @socket)->
         cookies    = cookie.parse @socket.handshake.headers.cookie
         @sessionId = cookies.alcarin
         @socket.on 'auth', @onAuth
         @socket.on 'disconnect', @onDisconnect
-
+        @responder = new GameEventsResponder @
         @log "connected"
 
     log: (text, type = 'info')->
         log[type] "WebBrowser client '#{@sessionId}': #{text}."
 
+    # server can directly sent to online clients events by this method
     sendEvent: (gameEvent, need_reset)=>
         if @authorized
             # we need first resolve events before sending it to client
@@ -51,6 +55,20 @@ class GameClient
                 eventResolving.done (gameEventsPack)=>
                     @socket.emit 'reset-events', gameEventsPack
 
+    onClientEvent: (ev)=>
+        return false if not @authorized
+        @responder.respond ev.name, ev.args if @responder.has ev.name
+
+    authorize: =>
+        @authorized = true
+
+        @socket.on '*', @onClientEvent
+
+        EventsBus.emit 'web-client.authorized', @
+        @socket.emit 'authorized'
+        @log 'authorized'
+
+
     # client is authorized by his session id. we need check that this session id is
     # valid for specific character.
     onAuth: (data)=>
@@ -60,14 +78,7 @@ class GameClient
 
         # if we can not fetch character data we can not continue
         @character.fail @manualDisconnect
-
-        sessionChecked = =>
-            @authorized = true
-            EventsBus.emit 'web-client.authorized', @
-            @socket.emit 'authorized'
-            @log 'authorized'
-
-        checkSession(session, data.charid).done sessionChecked, @manualDisconnect
+        checkSession(session, data.charid).done @authorize, @manualDisconnect
 
     manualDisconnect: (reason)=>
         @authorized = false
