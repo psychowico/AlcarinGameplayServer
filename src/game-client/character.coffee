@@ -8,13 +8,25 @@ Character object promise.
 db = require '../tool/mongo'
 Q  = require 'q'
 
+Broadcaster = require '../game-event/broadcaster'
+
 class Character
+
+    broadcast: (gameEvent)->
+        # any time creating new broadcaster - because of
+        # problems with gameEvent async setting. GC should
+        # clean it.
+        new Broadcaster @, gameEvent
+
+    squeeze: ->
+        type: 'char'
+        id: @_id
 
     @fromId = (id)->
         deferred = Q.defer()
 
         resolveCharClass = (result)->
-            _char = new Character id
+            _char = new Character()
             _char[key] = prop for key, prop of result
             deferred.resolve _char
 

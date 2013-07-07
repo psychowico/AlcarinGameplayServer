@@ -29,7 +29,7 @@ class BrowserProxy
 
         EventsBus.on 'web-client.disconnected', @onClientDisconnected
         EventsBus.on 'web-client.authorized', @onClientAuthorized
-        EventsBus.on 'events.delivery', @processEventsDelivery
+        EventsBus.on 'game-event.published', @publishEvent
 
         deferred.promise
 
@@ -49,19 +49,9 @@ class BrowserProxy
             index = @ungroupedClients.indexOf client
             @ungroupedClients.splice index, 1
 
-    # we got events pack from app server. we need process it and forward it to
-    # connected and authorized browser clients.
-    processEventsDelivery: (data)=>
-        count = 0
-        for dataPack in data
-            if dataPack.$reset
-                for charid in dataPack.$ids
-                    count++ if @clients[charid]?
-                    @clients[charid]?.resetEvents dataPack.$events
-            else
-                for charid in dataPack.$ids
-                    count++ if @clients[charid]?
-                    @clients[charid]?.sendEvent dataPack.$event
-        log.info "Forwarding GameEvent struct to #{count} clients."
+    # we got a game-event from other application place. we need
+    # forward it to connected and authorized browser clients.
+    publishEvent: (gameEvent)=>
+        @clients[gameEvent.char]?.sendEvent gameEvent
 
 module.exports = BrowserProxy

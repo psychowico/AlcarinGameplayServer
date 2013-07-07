@@ -25,6 +25,7 @@ class GameEventsResponser
 
     respond: (eventId, args)->
         @client.character.done (_char)=>
-            @supportedEvents[eventId] @client.socket, _char
+            _args = [@client.socket, _char].concat args
+            @supportedEvents[eventId].apply @, _args
 
 module.exports = GameEventsResponser

@@ -70,10 +70,9 @@ resolveGameEventArg = (char, gameEvent, gameEventArg)->
     deferred.promise
 
 saveGameEvent = (char, gameEvent)->
-    eventId = db.ObjectId gameEvent._id.$id
     changes = {args: gameEvent.args}
     changes.text = gameEvent.text if gameEvent.text?
-    db.collection('map.chars.events').update {_id: eventId},
+    db.collection('map.chars.events').update {_id: gameEvent._id},
         $set: changes
 
 resolveAll = (_char, events)=>

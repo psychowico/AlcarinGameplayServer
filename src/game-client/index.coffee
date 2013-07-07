@@ -15,7 +15,7 @@ log           = require '../logger'
 
 EventsBus           = require '../events-bus'
 Character           = require './character.coffee'
-GameEventsResponder = require('../game-events-responder')
+GameEventsResponder = require('../game-event/responder')
 
 # module code
 
@@ -63,6 +63,11 @@ class GameClient
         @authorized = true
 
         @socket.on '*', @onClientEvent
+
+        # we manually call this event - because client always
+        # would call it, if server won't respond by gameevents list
+        # after authorize
+        @responder.respond 'fetch-all-events'
 
         EventsBus.emit 'web-client.authorized', @
         @socket.emit 'authorized'

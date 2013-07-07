@@ -28,7 +28,7 @@ fetchGivenName = (_char, _targetid)->
     args =
         who   : _char._id
         type  : 'char'
-        target: db.ObjectId _targetid
+        target: _targetid
 
     remembering = Q.ninvoke db.collection('map.chars.memory'), 'findOne', args, ['val']
     remembering = remembering.then (result)->
@@ -44,7 +44,7 @@ fetchNaturalName = (char, _targetid)->
     lang = char.lang or 'pl'
 
     fetchingNaturalName = Q.ninvoke db.collection('map.chars'), 'findOne',
-        {_id: db.ObjectId _targetid}, ['born']
+        {_id: _targetid}, ['born']
     fetchingNaturalName.done (result)->
         born = result.born or 0
         max = varieties.length - 1
