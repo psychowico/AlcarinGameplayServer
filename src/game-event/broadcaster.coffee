@@ -1,8 +1,8 @@
 'use strict'
 
-units  = require '../tool/unit-converter'
-db     = require '../tool/mongo'
-extend = require('util')._extend
+units = require '../tool/unit-converter'
+db    = require '../tool/mongo'
+_     = require 'underscore'
 
 Q         = require 'q'
 EventsBus = require '../events-bus'
@@ -22,7 +22,7 @@ class Broadcaster
 
         @gameEvent.resolve().done (result)=>
             for id in ids
-                copy = extend {}, result
+                copy = _.clone result
                 copy.variety = if @owner._id.equals id then 'std' else 'others'
                 copy.char = id
                 do (copy)->

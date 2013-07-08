@@ -4,7 +4,7 @@ db  = require '../../../tool/mongo'
 log = require '../../../logger'
 Q   = require 'q'
 
-resolveEvents = require('../../../game-client/game-events-resolver').resolveAll
+resolveEvents = require('../../resolver').resolveAll
 
 fetchEvents = (socket, character)->
     conditions =

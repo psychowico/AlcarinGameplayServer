@@ -6,7 +6,6 @@ Q   = require 'q'
 
 GameEvent = require '../../'
 
-resolveEvents = require('../../../game-client/game-events-resolver').resolveAll
 
 talkToAll = (socket, character, content)->
     return if not content? or content.length == 0

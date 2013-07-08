@@ -9,6 +9,7 @@
         "q"                 : "*",
         "winston"           : "*",
         "keypress"          : "0.1.0",
-        "socket.io-wildcard": "*"
+        "socket.io-wildcard": "*",
+        "underscore"        : "*"
     }
 }

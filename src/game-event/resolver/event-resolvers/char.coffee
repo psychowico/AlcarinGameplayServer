@@ -8,9 +8,9 @@ to name stored in character memory.
 in other case, we render static translated character name, related to his age.
 ###
 
-db         = require '../../tool/mongo'
+db         = require '../../../tool/mongo'
 Q          = require 'q'
-resolveTag = require('../../tool/tags-resolver').resolveTag
+resolveTag = require('../../../tool/tags-resolver').resolveTag
 
 module.exports = (character, arg)->
     if arg.type is 'char'

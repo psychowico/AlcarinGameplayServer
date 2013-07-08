@@ -8,9 +8,10 @@
 ###
 
 Q           = require 'q'
-resolveTags = require('../tool/tags-resolver').resolveTags
-db          = require '../tool/mongo'
-log         = require '../logger'
+resolveTags = require('../../tool/tags-resolver').resolveTags
+db          = require '../../tool/mongo'
+log         = require '../../logger'
+_           = require 'underscore'
 
 # let load all game events resolvers. event resolver should
 # resolve event to text, or return false/nothing
@@ -24,23 +25,26 @@ loadGameEventResolvers = ->
 
 resolvers = loadGameEventResolvers()
 
-resolveTexts = (events, lang)->
+# return promise of copy of gameEvents array,
+# with tagid's resolved to texts.
+resolveTexts = (gameEvents, lang)->
     deferred = Q.defer()
     tags = []
     dict = {}
-    for ev in events
-        key = "events.#{ev.tagid}.#{ev.variety}.#{lang}"
-        dict[key] = [] if not dict[key]?
-        dict[key].push ev
+    _gameEvents = _.clone gameEvents
+    for gameEvent in _gameEvents
+        key = "events.#{gameEvent.tagid}.#{gameEvent.variety}.#{lang}"
+        dict[key] = dict[key] or []
+        dict[key].push gameEvent
         tags.push key
 
     resolving = resolveTags tags
     resolving.done (result)->
         for key, _events of dict
             text = result[key]
-            for ev in _events
-                ev.text = text
-        deferred.resolve()
+            for gameEvent in _events
+                gameEvent.text = text
+        deferred.resolve _gameEvents
     deferred.promise
 
 resolveGameEventArg = (char, gameEvent, gameEventArg)->
@@ -75,14 +79,18 @@ saveGameEvent = (char, gameEvent)->
     db.collection('map.chars.events').update {_id: gameEvent._id},
         $set: changes
 
-resolveAll = (_char, events)=>
+# return array of resolved gameEvents, for specific character.
+resolveAll = (_char, gameEvents)=>
     deferred = Q.defer()
     lang = _char.lang or 'pl'
     tasks = []
 
-    resolveTexts(events, lang).done =>
-        for gameEvent in events
+    resolveTexts(gameEvents, lang).done (_gameEvents)=>
+        for gameEvent in _gameEvents
             gameEventTasks = []
+            # we clone it to not modyfi originl gameEvents array
+            gameEvent.args = _.clone gameEvent.args
+
             for i in [0..gameEvent.args.length - 1]
                 arg = gameEvent.args[i]
                 neededArg = gameEvent.text.indexOf("%#{i}") != -1
@@ -106,7 +114,7 @@ resolveAll = (_char, events)=>
                             saveGameEvent _char, gameEvent
                             break
 
-        resolveAllTasks = -> deferred.resolve events
+        resolveAllTasks = -> deferred.resolve _gameEvents
         Q.all(tasks).done resolveAllTasks, resolveAllTasks
 
     deferred.promise

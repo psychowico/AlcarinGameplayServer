@@ -10,11 +10,11 @@ by php session id (related with choosed character player)
 
 cookie        = require 'cookie'
 checkSession  = require '../tool/session-checker'
-resolveEvents = require('./game-events-resolver').resolveAll
+resolveEvents = require('../game-event/resolver').resolveAll
 log           = require '../logger'
 
 EventsBus           = require '../events-bus'
-Character           = require './character.coffee'
+Character           = require './character'
 GameEventsResponder = require('../game-event/responder')
 
 # module code
