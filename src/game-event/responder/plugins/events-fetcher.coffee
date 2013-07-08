@@ -13,12 +13,10 @@ fetchEvents = (socket, character)->
     cursor = db.collection('map.chars.events').find conditions
     fetching = Q.ninvoke cursor, 'toArray'
 
-    processAndSendEvents = (events)->
+    fetching.done (events)->
         processing = resolveEvents character, events
         processing.done (result)->
             socket.emit 'reset-events', result
-
-    fetching.done processAndSendEvents, (err)-> log.error err
 
 
 module.exports =

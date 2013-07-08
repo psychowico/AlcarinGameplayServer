@@ -1,4 +1,5 @@
-log = require './logger'
+log  = require './logger'
+unit = require './tool/unit-converter'
 
 config = ->
     # web browser will fetch for events on this
@@ -10,6 +11,10 @@ config = ->
     @mongo_connection_string = 'mongodb://localhost/alcarin'
     # socket.io log level
     @log_level = 1 # 1 - least
+
+    @game =
+        character:
+            'day-view-radius': unit.fromMeters 200
 
 config.apply exports
 
