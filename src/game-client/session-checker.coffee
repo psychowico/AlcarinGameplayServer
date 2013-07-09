@@ -5,7 +5,7 @@ providing method that from checking that specfic character belong to
 specific session id player. returing Q promise.
 ###
 
-db = require './mongo'
+db = require '../tool/mongo'
 Q  = require 'q'
 
 FIELDS =
@@ -14,6 +14,7 @@ FIELDS =
     player  : 1
 
 checkPermission = (doc, charid)->
+    return Q.reject 'Invalid charid.' if not db.ObjectId.isValid charid
     deferred = Q.defer()
 
     charid   = db.ObjectId charid

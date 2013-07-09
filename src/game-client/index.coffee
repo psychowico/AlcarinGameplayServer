@@ -9,7 +9,7 @@ by php session id (related with choosed character player)
 # requires
 
 cookie        = require 'cookie'
-checkSession  = require '../tool/session-checker'
+checkSession  = require './session-checker'
 resolveEvents = require('../game-event/resolver').resolveAll
 log           = require '../logger'
 

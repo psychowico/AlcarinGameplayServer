@@ -23,6 +23,7 @@ class Character
         id: @_id
 
     @fromId = (id)->
+        return Q.reject 'Invalid charid.' if not db.ObjectId.isValid id
         deferred = Q.defer()
 
         resolveCharClass = (result)->
