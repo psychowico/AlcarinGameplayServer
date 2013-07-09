@@ -45,15 +45,15 @@ class GameClient
                 eventResolving = resolveEvents _char, [gameEvent]
                 eventResolving.done (gameEventsPack)=>
                     resolvedGameEvent = gameEventsPack[0]
-                    @socket.emit 'game-event', resolvedGameEvent
+                    @socket.emit 'game-event.add', resolvedGameEvent
 
-    resetEvents: (events)=>
-        if @authorized
-            @character.done (_char)=>
-                # we need first resolve events before sending it to client
-                eventResolving = resolveEvents _char, events
-                eventResolving.done (gameEventsPack)=>
-                    @socket.emit 'reset-events', gameEventsPack
+    # resetEvents: (events)=>
+    #     if @authorized
+    #         @character.done (_char)=>
+    #             # we need first resolve events before sending it to client
+    #             eventResolving = resolveEvents _char, events
+    #             eventResolving.done (gameEventsPack)=>
+    #                 @socket.emit 'game-event.swap', gameEventsPack
 
     onClientEvent: (ev)=>
         return false if not @authorized
@@ -64,11 +64,6 @@ class GameClient
 
         @socket.on '*', @onClientEvent
 
-        # we manually call this event - because client always
-        # would call it, if server won't respond by gameevents list
-        # after authorize
-        @responder.respond 'fetch-all-events'
-
         EventsBus.emit 'web-client.authorized', @
         @socket.emit 'authorized'
         @log 'authorized'
@@ -77,6 +72,7 @@ class GameClient
     # client is authorized by his session id. we need check that this session id is
     # valid for specific character.
     onAuth: (data)=>
+        return false if @authorized
         session = @sessionId
         @character = Character.fromId data.charid
         @charid    = data.charid

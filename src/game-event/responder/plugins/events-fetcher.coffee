@@ -16,8 +16,7 @@ fetchEvents = (socket, character)->
     fetching.done (events)->
         processing = resolveEvents character, events
         processing.done (result)->
-            socket.emit 'reset-events', result
-
+            socket.emit 'game-event.swap', result
 
 module.exports =
-    'fetch-all-events': fetchEvents
+    'swap.game-events': fetchEvents

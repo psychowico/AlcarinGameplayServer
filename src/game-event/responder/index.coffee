@@ -9,6 +9,7 @@ and target charater object (who got event).
 
 class GameEventsResponser
     supportedEvents: {}
+    swapEvents: {}
 
     constructor: (@client)->
         @loadPlugins()
@@ -18,14 +19,22 @@ class GameEventsResponser
         files = require('fs').readdirSync("#{__dirname}/plugins")
         for file in files
             plugin = require "./plugins/#{file}"
-            @supportedEvents[key] = fun for key, fun of plugin
+            for key, fun of plugin
+                @supportedEvents[key] = fun
+                @swapEvents[key] = fun if key.indexOf 'swap.' == 0
 
     has: (eventId)->
+        return true if eventId is 'swap.all'
         @supportedEvents[eventId]?
 
     respond: (eventId, args)->
+
         @client.character.done (_char)=>
             _args = [@client.socket, _char].concat args
-            @supportedEvents[eventId].apply @, _args
+            if eventId == 'swap.all'
+                pluginFun.apply @, _args for key, pluginFun of @swapEvents
+            else
+                @supportedEvents[eventId]?.apply @, _args
+
 
 module.exports = GameEventsResponser

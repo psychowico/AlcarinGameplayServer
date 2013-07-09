@@ -23,7 +23,8 @@ class Broadcaster
         @gameEvent.resolve().done (result)=>
             for id in ids
                 copy = _.clone result
-                copy.variety = if @owner._id.equals id then 'std' else 'others'
+                copy.variety  = if @owner._id.equals id then 'std' else 'others'
+                copy.response = true if @owner._id.equals id
                 copy.char = id
                 do (copy)->
                     publishingEvent = Q.ninvoke charEvents, 'insert', copy
