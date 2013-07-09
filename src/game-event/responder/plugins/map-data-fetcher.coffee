@@ -24,7 +24,7 @@ fetchTerrain = (socket, character)->
     cursor = map.find conditions, fields
     fetching = Q.ninvoke cursor, 'toArray'
     fetching.done (fields)->
-        socket.emit 'terrain.swap', fields
+        socket.emit 'terrain.swap', viewRadius, fields
 
 
 module.exports =

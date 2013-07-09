@@ -21,7 +21,7 @@ class GameEventsResponser
             plugin = require "./plugins/#{file}"
             for key, fun of plugin
                 @supportedEvents[key] = fun
-                @swapEvents[key] = fun if key.indexOf 'swap.' == 0
+                @swapEvents[key] = fun if key.indexOf('swap.') == 0
 
     has: (eventId)->
         return true if eventId is 'swap.all'
@@ -32,7 +32,8 @@ class GameEventsResponser
         @client.character.done (_char)=>
             _args = [@client.socket, _char].concat args
             if eventId == 'swap.all'
-                pluginFun.apply @, _args for key, pluginFun of @swapEvents
+                for key, pluginFun of @swapEvents
+                    pluginFun.apply @, _args
             else
                 @supportedEvents[eventId]?.apply @, _args
 
