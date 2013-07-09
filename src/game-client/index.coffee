@@ -29,8 +29,11 @@ class GameClient
     constructor: (@proxy, @socket)->
         cookies    = cookie.parse @socket.handshake.headers.cookie
         @sessionId = cookies.alcarin
+
         @socket.on 'auth', @onAuth
         @socket.on 'disconnect', @onDisconnect
+        @socket.on '*', @onClientEvent
+
         @responder = new GameEventsResponder @
         @log "connected"
 
@@ -61,11 +64,8 @@ class GameClient
 
     authorize: =>
         @authorized = true
-
-        @socket.on '*', @onClientEvent
-
         EventsBus.emit 'web-client.authorized', @
-        @socket.emit 'authorized'
+        @socket.emit 'client.authorized'
         @log 'authorized'
 
 
