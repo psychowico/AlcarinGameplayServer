@@ -14,7 +14,7 @@ resolveEvents = require('../game-event/resolver').resolveAll
 log           = require '../logger'
 
 EventsBus           = require '../events-bus'
-Character           = require './character'
+Character           = require '../game-object/character'
 GameEventsResponder = require('../game-event/responder')
 
 # module code

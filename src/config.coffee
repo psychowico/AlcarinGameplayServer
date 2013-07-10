@@ -14,7 +14,7 @@ config = ->
 
     @game =
         character:
-            'day-view-radius': unit.fromKm 3
+            viewRadius: unit.fromKm 3
 
 config.apply exports
 

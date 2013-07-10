@@ -4,19 +4,15 @@ db  = require '../../../tool/mongo'
 log = require '../../../logger'
 Q   = require 'q'
 
-game   = require('../../../config').game
 map    = db.collection 'map'
 
 fetchTerrain = (socket, character)->
-    viewRadius = game.character['day-view-radius']
+    viewRadius = character.viewRadius()
     center     = character.loc
     conditions =
         'loc':
-            '$within':
-                '$box': [
-                    [center.x - viewRadius, center.y - viewRadius],
-                    [center.x + viewRadius, center.y + viewRadius],
-                ]
+            '$geoWithin':
+                '$center': [ [center.x, center.y], viewRadius ]
         # only fields with information about territory ("land")
         'land': {'$exists': 1}
     fields = ['land', 'loc']
