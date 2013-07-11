@@ -17,6 +17,7 @@ class Character
 
     constructor: (source)->
         if source
+            @propertiesToSave = (key for key, prop of source)
             @[key] = prop for key, prop of source
 
     broadcast: (gameEvent)->
@@ -29,7 +30,11 @@ class Character
         type: 'char'
         id: @_id
 
+    # max character view radius
     viewRadius: -> config.viewRadius
+
+    # traveling current speed (if traveling) per hour
+    speed: -> config.travelingSpeed
 
     # characters are fully visible only on short view radius
     charViewRadius: -> 1 * config.viewRadius / 3
@@ -43,6 +48,18 @@ class Character
 
     distanceTo: (obj)->
         Math.sqrt Math.pow(obj.loc.x - @loc.x, 2) + Math.pow(obj.loc.y - @loc.y, 2)
+
+    # save specific character struct fields
+    save: (fields)=>
+        fields = [fields] if fields and not Array.isArray fields
+        data = {}
+        for key in fields or @propertiesToSave
+            val = @
+            val = val[part] for part in key.split '.'
+            data[key] = val
+        query = {_id: @_id}
+        data = {$set: data} if fields
+        Q.ninvoke db.collection('map.chars'), 'update', query, data, {}
 
     @fromId = (id)->
         return Q.reject 'Invalid charid.' if not db.ObjectId.isValid id

@@ -7,12 +7,11 @@ Q   = require 'q'
 map    = db.collection 'map'
 
 fetchTerrain = (socket, character)->
-    viewRadius = character.viewRadius()
     center     = character.loc
     conditions =
         'loc':
             '$geoWithin':
-                '$center': [ [center.x, center.y], viewRadius ]
+                '$center': [ [center.x, center.y], character.viewRadius() ]
         # only fields with information about territory ("land")
         'land': {'$exists': 1}
     fields = ['land', 'loc']
@@ -20,7 +19,8 @@ fetchTerrain = (socket, character)->
     cursor = map.find conditions, fields
     fetching = Q.ninvoke cursor, 'toArray'
     fetching.done (fields)->
-        socket.emit 'terrain.swap', viewRadius, fields
+        socket.emit 'terrain.swap', fields,
+                    character.viewRadius(), character.charViewRadius()
 
 
 module.exports =

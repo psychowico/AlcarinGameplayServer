@@ -50,14 +50,6 @@ class GameClient
                     resolvedGameEvent = gameEventsPack[0]
                     @socket.emit 'game-event.add', resolvedGameEvent
 
-    # resetEvents: (events)=>
-    #     if @authorized
-    #         @character.done (_char)=>
-    #             # we need first resolve events before sending it to client
-    #             eventResolving = resolveEvents _char, events
-    #             eventResolving.done (gameEventsPack)=>
-    #                 @socket.emit 'game-event.swap', gameEventsPack
-
     onClientEvent: (ev)=>
         return false if not @authorized
         @responder.respond ev.name, ev.args if @responder.has ev.name

@@ -10,6 +10,7 @@
         "winston"           : "*",
         "keypress"          : "0.1.0",
         "socket.io-wildcard": "*",
-        "underscore"        : "*"
+        "underscore"        : "*",
+        "sylvester"         : "*"
     }
 }

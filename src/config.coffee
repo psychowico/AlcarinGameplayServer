@@ -14,7 +14,10 @@ config = ->
 
     @game =
         character:
-            viewRadius: unit.fromKm 3
+            viewRadius    : unit.fromKm 3
+            # avarage people speed is 6 km/h, but in alcarin time
+            # are 4 times slower
+            travelingSpeed: unit.fromKm 6 / 4
 
 config.apply exports
 
