@@ -23,10 +23,14 @@ fetchTerrain = (socket, character)->
     result = Q.all([fetchingTime, fetching]).spread (timestamp, fields)->
         gametime = new time.GameTime(timestamp)
         localhour = gametime.localhour(center)
+
+        lighting = 1 - (localhour / 48)
+        if localhour > 48
+            lighting = 1 - ( 2 - localhour / 48)
         socket.emit 'terrain.swap', fields,
             radius: character.viewRadius()
             charViewRadius: character.charViewRadius()
-            lighting: 1 - localhour / 96
+            lighting: lighting
     result.done()
 
 
