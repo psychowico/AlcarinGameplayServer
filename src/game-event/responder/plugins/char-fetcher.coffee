@@ -4,7 +4,6 @@ db  = require '../../../tool/mongo'
 Q   = require 'q'
 
 Character = require '../../../game-object/character'
-
 chars = db.collection('map.chars')
 
 # promise of character representation

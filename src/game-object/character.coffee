@@ -11,8 +11,6 @@ config       = require('../config').game.character
 
 NameResolver = require('./char-resolver')
 
-Broadcaster = require '../game-event/broadcaster'
-
 class Character
 
     constructor: (source)->
@@ -24,6 +22,7 @@ class Character
         # any time creating new broadcaster - because of
         # problems with gameEvent async setting. GC should
         # clean it.
+        Broadcaster = require '../game-event/broadcaster'
         new Broadcaster @, gameEvent
 
     squeeze: ->
@@ -83,4 +82,3 @@ class Character
         deferred.promise
 
 module.exports = Character
-

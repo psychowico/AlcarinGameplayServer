@@ -1,6 +1,5 @@
 'use strict'
 
-Broadcaster = require './broadcaster'
 GameTime    = require '../tool/gametime'
 Q           = require 'q'
 
