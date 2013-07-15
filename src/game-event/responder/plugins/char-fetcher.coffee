@@ -48,6 +48,15 @@ fetchCharacter = (socket, viewer, fetchId)->
                 prepareMinimumCharsData([charObj], viewer).done (data)->
                     socket.emit 'char.fetch', data[0]
 
+# starting current character travel
+moveCharacter = (socket, viewer, target)->
+    return if not target? or not target.x? or not target.y?
+
+    viewer.move = viewer.move or {}
+    viewer.move.target = target
+    viewer.save 'move.target'
+
+    socket.emit 'char.fetch', viewer
 
 # fetching only characters positions and names
 swapCharactersAround = (socket, viewer)->
@@ -72,4 +81,5 @@ swapCharactersAround = (socket, viewer)->
 
 module.exports =
     'fetch.char': fetchCharacter
+    'move.char' : moveCharacter
     'swap.chars': swapCharactersAround
