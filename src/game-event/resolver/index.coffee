@@ -42,8 +42,9 @@ resolveTexts = (gameEvents, lang)->
     resolving.done (result)->
         for key, _events of dict
             text = result[key]
-            for gameEvent in _events
-                gameEvent.text = text
+            if text and text.length > 0
+                for gameEvent in _events
+                    gameEvent.text = text
         deferred.resolve _gameEvents
     deferred.promise
 
@@ -87,13 +88,16 @@ resolveAll = (_char, gameEvents)=>
 
     resolveTexts(gameEvents, lang).done (_gameEvents)=>
         for gameEvent in _gameEvents
+            # we not processing "system" events, that won't displaying
+            # for user on event list
+            continue if gameEvent.system
             gameEventTasks = []
             # we clone it to not modyfi originl gameEvents array
             gameEvent.args = _.clone gameEvent.args
 
             for i in [0..gameEvent.args.length - 1]
                 arg = gameEvent.args[i]
-                neededArg = gameEvent.text.indexOf("%#{i}") != -1
+                neededArg = (gameEvent.text and gameEvent.text.indexOf("%#{i}") != -1)
                 isArgObject = (typeof arg) is 'object'
                 if not neededArg
                     gameEvent.args[i] = null

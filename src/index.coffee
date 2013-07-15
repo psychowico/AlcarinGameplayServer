@@ -10,10 +10,7 @@ GameAppServer    = require './server/app'
 repl             = require './tool/repl-support'
 gameloop         = require './gameloop'
 
-client_server = new GameClientServer()
-app_server = new GameAppServer()
-
-client_server.start()
-    .then(app_server.start)
+GameClientServer.start()
+    .then(GameAppServer.start)
     .then(gameloop.start)
     .done -> repl.setHook()

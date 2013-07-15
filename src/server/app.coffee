@@ -37,4 +37,4 @@ class AppProxy
         ind = @clients.indexOf client.socket
         @clients.splice ind, 1
 
-module.exports = AppProxy
+module.exports = new AppProxy()

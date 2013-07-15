@@ -14,10 +14,14 @@ config = ->
 
     @game =
         character:
+            talkRadius: unit.fromMeters 15
+            # none can see more - events will not propagate
+            # further this distance
+            maxViewRadius : unit.fromKm 10
             viewRadius    : unit.fromKm 3
             # avarage people speed is 6 km/h, but in alcarin time
             # are 4 times slower
-            travelingSpeed: unit.fromKm 6 / 4
+            travelingSpeed: unit.fromKm 146 / 4
 
 config.apply exports
 

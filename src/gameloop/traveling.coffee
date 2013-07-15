@@ -7,6 +7,7 @@ db         = require '../tool/mongo'
 Character  = require '../game-object/character'
 Vector     = require('sylvester').Vector
 EventsBus  = require '../events-bus'
+GameEvent  = require '../game-event'
 
 chars = db.collection('map.chars')
 
@@ -25,24 +26,40 @@ updateCharacter = (character, time)->
     last  = character.move.last_update
     dTime = time - last
 
-    vloc = Vector.create [character.loc.x, character.loc.y]
     # speed per second
     speed     = dTime * character.speed() / SEC_IN_HOUR
-    vspeed    = Vector.create [speed, 0]
-    # directory in radians
-    dir       = character.move.dir
+    target    = character.move.target
 
-    vchange = vspeed.rotate dir, Vector.Zero 2
-    newLoc  = vloc.add vchange
+    vloc    = Vector.create [character.loc.x, character.loc.y]
+    vtarget = Vector.create [target.x, target.y]
+    vdir    = vtarget.subtract(vloc).toUnitVector()
 
-    if needUpdate vloc, newLoc
+    vnewLoc  = vloc.add vdir.x(speed)
+
+    # check that we are crossed target position
+    vnewdir    = vtarget.subtract(vnewLoc).toUnitVector()
+    if vnewdir.isAntiparallelTo vdir
+        # we cross the target place, need stop character
+        vnewLoc = vtarget
+        character.loc =
+            x: vnewLoc.e 1
+            y: vnewLoc.e 2
+        character.move.target = null
+        character.move.last_update = null
+        saving = character.save ['loc', 'move.last_update', 'move.target']
+    else if needUpdate vloc, vnewLoc
+        # let move chararacter a little.
         character.move.last_update = time
         character.loc =
-            x: newLoc.e 1
-            y: newLoc.e 2
+            x: vnewLoc.e 1
+            y: vnewLoc.e 2
 
         saving = character.save ['loc', 'move.last_update']
-        saving.then -> EventsBus.emit 'char.moved', character
+    if saving
+        saving.done ->
+            gameEvent = new GameEvent 'char.update', character._id, character.loc
+            gameEvent.signAsTmp()
+            character.broadcast(gameEvent).toWatchers()
         return saving
 
     Q.resolve()
@@ -50,7 +67,7 @@ updateCharacter = (character, time)->
 update = (time)->
     deffered = Q.defer()
 
-    cursor = chars.find {move: {$exists: true}}
+    cursor = chars.find {'move.target': {$ne: null}}
     Q.ninvoke(cursor, 'toArray').done (chars)->
         if chars?
             tasks = []

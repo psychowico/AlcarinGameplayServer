@@ -28,8 +28,7 @@ class GameEventsResponser
         @supportedEvents[eventId]?
 
     respond: (eventId, args)->
-
-        @client.character.done (_char)=>
+        @client.resolvingCharacter().done (_char)=>
             _args = [@client.socket, _char].concat args
             if eventId == 'swap.all'
                 for key, pluginFun of @swapEvents

@@ -21,7 +21,7 @@ GameEventsResponder = require('../game-event/responder')
 
 class GameClient
     sessionId : null
-    character : null
+    # character : null
     charid    : null
     authorized: false
     responder : null
@@ -40,11 +40,14 @@ class GameClient
     log: (text, type = 'info')->
         log[type] "WebBrowser client '#{@sessionId}': #{text}."
 
+    resolvingCharacter: =>
+        Character.fromId @charid
+
     # server can directly sent to online clients events by this method
     sendEvent: (gameEvent, need_reset)=>
         if @authorized
             # we need first resolve events before sending it to client
-            @character.done (_char)=>
+            @resolvingCharacter().done (_char)=>
                 eventResolving = resolveEvents _char, [gameEvent]
                 eventResolving.done (gameEventsPack)=>
                     resolvedGameEvent = gameEventsPack[0]
@@ -66,11 +69,10 @@ class GameClient
     onAuth: (data)=>
         return false if @authorized
         session = @sessionId
-        @character = Character.fromId data.charid
         @charid    = data.charid
 
         # if we can not fetch character data we can not continue
-        @character.fail @manualDisconnect
+        # @character.fail @manualDisconnect
         checkSession(session, data.charid).done @authorize, @manualDisconnect
 
     manualDisconnect: (reason)=>

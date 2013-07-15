@@ -11,11 +11,21 @@ class GameEvent
     # resolving event to db writeable hashkey object.
     # it use "now" as time.
     resolve: ->
-        resolvingParams = Q.all [GameTime.timestamp()]
-        resolvingParams.spread (timestamp)=>
-            time   : timestamp
-            tagid  : @id
-            args   : @args
+        resolvingTime = GameTime.timestamp()
+        resolvingTime.then (timestamp)=>
+            data =
+                time   : timestamp
+                args   : @args
+            if @tmp
+                data.system = true
+                data.id     = @id
+            else
+                data.tagid = @id
+
+            return data
+
+    signAsTmp: -> @tmp = true
+
 
 
 module.exports = GameEvent

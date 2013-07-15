@@ -13,12 +13,11 @@ GameClient = require '../game-client'
 Q          = require 'q'
 log        = require '../logger'
 
-
 class BrowserProxy
     clients         : {}
     ungroupedClients: []
 
-    start: ->
+    start: =>
         deferred = Q.defer()
 
         @server = server = io.listen config.client_port, ->
@@ -54,4 +53,4 @@ class BrowserProxy
     publishEvent: (gameEvent)=>
         @clients[gameEvent.char]?.sendEvent gameEvent
 
-module.exports = BrowserProxy
+module.exports = new BrowserProxy()

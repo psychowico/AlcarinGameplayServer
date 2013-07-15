@@ -46,8 +46,15 @@ class Character
     # it need viewer only for language choose
     resolveNaturalName: (viewer)-> NameResolver.resolveNaturalName @, viewer
 
-    distanceTo: (obj)->
-        Math.sqrt Math.pow(obj.loc.x - @loc.x, 2) + Math.pow(obj.loc.y - @loc.y, 2)
+    # check that target can be see by current character
+    inViewRadius: (target)-> return @distanceTo(target) <= @viewRadius()
+
+    distanceTo: (x, y)->
+        if not y?
+            loc = x.loc
+            x = loc.x
+            y = loc.y
+        Math.sqrt Math.pow(x - @loc.x, 2) + Math.pow(y - @loc.y, 2)
 
     # save specific character struct fields
     save: (fields)=>

@@ -20,7 +20,8 @@ fetchTerrain = (socket, character)->
     fetching = Q.ninvoke cursor, 'toArray'
     fetching.done (fields)->
         socket.emit 'terrain.swap', fields,
-                    character.viewRadius(), character.charViewRadius()
+            radius: character.viewRadius()
+            charViewRadius: character.charViewRadius()
 
 
 module.exports =
