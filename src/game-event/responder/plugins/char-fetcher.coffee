@@ -13,11 +13,12 @@ prepareMinimumCharsData = (charsObj, viewer)->
     promises = []
     for _char in charsObj
         resolving = _char.resolveNaturalName viewer
-        promises.push resolving.then (naturalName)->
-            Q.resolve
-                _id : _char._id
-                loc : _char.loc
-                name: naturalName
+        do (_char)->
+            promises.push resolving.then (naturalName)->
+                Q.resolve
+                    _id : _char._id
+                    loc : _char.loc
+                    name: naturalName
 
     Q.allSettled(promises).then (results)->
         return (result.value for result in results)
