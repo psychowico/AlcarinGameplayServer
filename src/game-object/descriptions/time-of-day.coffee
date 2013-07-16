@@ -15,37 +15,16 @@ Q    = require 'q'
 Time = require('../../tool/gametime')
 
 # later text should be changed to tags
-events = [
-    {
-        from: 0
-        to: 96
-        text: 'Na świecie panuje jeszcze nieokreślona pora dnia, wszystko zdaje się stać w miejscu bez celu.'
-    }
-    {
-        from: 0
-        to: 24
-        text: 'A może jest popołudnie?'
-    }
-    {
-        from: 24
-        to: 72
-        text: 'Chociaż chyba jest noc.'
-    }
-    {
-        from: 72
-        to: 96
-        text: 'Chociaż chyba świta.'
-    }
-]
+events = {
+    day    : 'Cóż za piękny dzionek.',
+    evening: 'Zaraz będzie ciemno!',
+    night  : 'Ciemno wszędzie, głucho wszędzie..',
+    morning: 'Z jutrzenką wraca nadzieja.',
+}
 
 TimeOfDay = ->
     Time.GameTime().then (gametime)->
-        hour = gametime.hour()
-
-        descr = ''
-        for val in events
-            if hour >= val.from and hour <= val.to
-                descr += ' ' + val.text
-        return descr
+        whatTime = gametime.lighting().timeofday
+        return events[whatTime] or '<NODESCR>'
 
 module.exports = TimeOfDay

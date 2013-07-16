@@ -37,10 +37,10 @@ class GameTime
             when hour > 4 and hour <= 44
                 _intensity = 1
                 _timeofday = 'day'
-            when hour > 44 or hour <= 52
+            when hour > 44 and hour <= 52
                 _intensity = 1 - (hour % 44) / 8
                 _timeofday = 'evening'
-            when hour > 52 or hour <= 92
+            when hour > 52 and hour <= 92
                 _intensity = 0
                 _timeofday = 'night'
             else throw Error "Can not choose lighting system. Wrong hour: #{hour}"
