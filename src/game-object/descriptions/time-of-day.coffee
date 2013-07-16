@@ -11,8 +11,8 @@
 # offset = (90 / 360) * 96
 # and we add offset to all times
 
-Q          = require 'q'
-GameTime   = require('../tool/gametime').GameTime
+Q    = require 'q'
+Time = require('../../tool/gametime')
 
 # later text should be changed to tags
 events = [
@@ -38,18 +38,14 @@ events = [
     }
 ]
 
-class TimeOfDay
-
-
-    @description: (time, location)->
-        gametime  = new GameTime time
-        localhour = gametime.localhour location
+TimeOfDay = ->
+    Time.GameTime().then (gametime)->
+        hour = gametime.hour()
 
         descr = ''
         for val in events
-            if localhour >= val.from and localhour <= val.to
+            if hour >= val.from and hour <= val.to
                 descr += ' ' + val.text
-
-        Q.resolve descr
+        return descr
 
 module.exports = TimeOfDay

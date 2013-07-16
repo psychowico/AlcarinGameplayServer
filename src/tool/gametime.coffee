@@ -9,7 +9,7 @@ defaultStruct = ->
     'last_real_timestamp': currTime()
     'freeze'             : false
 
-exports.timestamp = ->
+timestamp = ->
     properties.get('time').then (timeStruct)->
         timeStruct = timeStruct or defaultStruct()
 
@@ -22,25 +22,32 @@ DAY_SEC = 60 * 60 * 24 * 4
 class GameTime
     constructor: (@timestamp)->
 
-    # return 'noticeable' hour of day - related with
-    # specific location on the world (because on the diffrent)
-    # world location we have another lighting in diffrent hours
-    localhour: (location, truncated=false)->
-
-        axis = Vector.create [1, 0]
-        vpos = Vector.create [location.x, location.y]
-        angle = vpos.angleFrom axis
-        angle = 2 * Math.PI - angle if location.y < 0
-
-        rel = angle / (2* Math.PI)
-        result = rel * 96 + @hour(false)
-        result = Math.floor result if truncated
-        return result % 96
-
-
     hour: (truncated=true)->
         hours = (@timestamp % DAY_SEC) / (60 * 60)
         hours = Math.floor hours if truncated
         return hours
 
-exports.GameTime = GameTime
+    # light intensity, from 0-1
+    lighting: ->
+        hour = @hour false
+        switch
+            when hour > 92 or hour <= 4
+                _intensity = ((hour + 4) % 96) / 8
+                _timeofday = 'morning'
+            when hour > 4 and hour <= 44
+                _intensity = 1
+                _timeofday = 'day'
+            when hour > 44 or hour <= 52
+                _intensity = 1 - (hour % 44) / 8
+                _timeofday = 'evening'
+            when hour > 52 or hour <= 92
+                _intensity = 0
+                _timeofday = 'night'
+            else throw Error "Can not choose lighting system. Wrong hour: #{hour}"
+        return {
+            intensity: _intensity
+            timeofday: _timeofday
+        }
+
+exports.GameTime  = -> timestamp().then (time)-> new GameTime time
+exports.timestamp = timestamp

@@ -17,20 +17,14 @@ fetchTerrain = (socket, character)->
         'land': {'$exists': 1}
     fields = ['land', 'loc']
 
-    fetchingTime = time.timestamp()
+    fetchingTime = time.GameTime()
     cursor = map.find conditions, fields
     fetching = Q.ninvoke cursor, 'toArray'
-    result = Q.all([fetchingTime, fetching]).spread (timestamp, fields)->
-        gametime = new time.GameTime(timestamp)
-        localhour = gametime.localhour(center)
-
-        lighting = 1 - (localhour / 48)
-        if localhour > 48
-            lighting = 1 - ( 2 - localhour / 48)
+    result = Q.all([fetchingTime, fetching]).spread (gametime, fields)->
         socket.emit 'terrain.swap', fields,
             radius: character.viewRadius()
             charViewRadius: character.charViewRadius()
-            lighting: lighting
+            lighting: gametime.lighting().intensity
     result.done()
 
 
