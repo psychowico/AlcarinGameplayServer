@@ -25,6 +25,9 @@ updateCharacter = (character, time)->
 
     last  = character.move.last_update
     dTime = time - last
+    if dTime <= 0
+        Q.resolve()
+        return
 
     # speed per second
     speed     = dTime * character.speed() / SEC_IN_HOUR
