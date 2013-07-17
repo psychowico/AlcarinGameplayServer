@@ -8,11 +8,13 @@ Q        = require 'q'
 map    = db.collection 'map'
 
 fetchTerrain = (socket, character)->
-    center     = character.loc
+    center = character.loc
+    radius = Math.round character.viewRadius()
     conditions =
         'loc':
             '$geoWithin':
-                '$center': [ [center.x, center.y], character.viewRadius() ]
+                # we calc territory in integers numbers
+                '$center': [ [Math.round(center.x), Math.round(center.y)], radius ]
         # only fields with information about territory ("land")
         'land': {'$exists': 1}
     fields = ['land', 'loc']
