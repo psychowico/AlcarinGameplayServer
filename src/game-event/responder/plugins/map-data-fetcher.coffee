@@ -1,9 +1,10 @@
 'use strict'
 
-db  = require '../../../tool/mongo'
-log = require '../../../logger'
-time = require('../../../tool/gametime')
-Q        = require 'q'
+db     = require '../../../tool/mongo'
+log    = require '../../../logger'
+time   = require('../../../tool/gametime')
+Q      = require 'q'
+Config = require('../../../config').game.character
 
 map    = db.collection 'map'
 
@@ -23,10 +24,13 @@ fetchTerrain = (socket, character)->
     cursor = map.find conditions, fields
     fetching = Q.ninvoke cursor, 'toArray'
     result = Q.all([fetchingTime, fetching]).spread (gametime, fields)->
-        socket.emit 'terrain.swap', fields,
-            radius: character.viewRadius()
+        info =
+            radius        : character.viewRadius()
+            lighting      : gametime.lighting().intensity
             charViewRadius: character.charViewRadius()
-            lighting: gametime.lighting().intensity
+            talkRadius    : Config.talkRadius
+
+        socket.emit 'terrain.swap', fields, info
     result.done()
 
 

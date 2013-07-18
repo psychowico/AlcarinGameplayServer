@@ -14,7 +14,7 @@ config = ->
 
     @game =
         character:
-            talkRadius: unit.fromMeters 15
+            talkRadius: unit.fromMeters 50
             # none can see more - events will not propagate
             # further this distance
             maxViewRadius : unit.fromKm 10

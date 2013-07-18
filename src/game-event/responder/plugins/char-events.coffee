@@ -58,6 +58,19 @@ moveCharacter = (socket, viewer, target)->
 
     socket.emit 'char.fetch', viewer
 
+# starting following target character
+followCharacter = (socket, viewer, target)->
+    return if not typeof target? is 'string'
+
+    viewer.move = viewer.move or {}
+    viewer.move.target =
+        type: 'char'
+        id: target
+    viewer.save 'move.target'
+
+    socket.emit 'char.fetch', viewer
+
+
 # fetching only characters positions and names
 swapCharactersAround = (socket, viewer)->
     center     = viewer.loc
@@ -80,6 +93,7 @@ swapCharactersAround = (socket, viewer)->
             socket.emit 'chars.swap', result.concat data
 
 module.exports =
-    'fetch.char': fetchCharacter
-    'move.char' : moveCharacter
-    'swap.chars': swapCharactersAround
+    'fetch.char' : fetchCharacter
+    'move.char'  : moveCharacter
+    'follow.char': followCharacter
+    'swap.chars' : swapCharactersAround
