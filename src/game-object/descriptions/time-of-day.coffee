@@ -13,18 +13,20 @@
 
 Q    = require 'q'
 Time = require('../../tool/gametime')
+Tag  = require('../../tool/tags-resolver')
 
 # later text should be changed to tags
 events = {
-    day    : 'Cóż za piękny dzionek.',
-    evening: 'Zaraz będzie ciemno!',
-    night  : 'Ciemno wszędzie, głucho wszędzie..',
-    morning: 'Z jutrzenką wraca nadzieja.',
+    day    : 'static.time-of-day.day'
+    evening: 'static.time-of-day.evening'
+    night  : 'static.time-of-day.night'
+    morning: 'static.time-of-day.morning'
 }
 
-TimeOfDay = ->
-    Time.GameTime().then (gametime)->
+TimeOfDay = (viewer)->
+    fetchingTime = Time.GameTime().then (gametime)->
         whatTime = gametime.lighting().timeofday
-        return events[whatTime] or '<NODESCR>'
+        return "#{events[whatTime]}.#{viewer.lang}" or '<NODESCR>'
+    fetchingTime.then Tag.resolveTag
 
 module.exports = TimeOfDay

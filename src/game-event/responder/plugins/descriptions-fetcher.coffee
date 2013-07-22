@@ -5,7 +5,7 @@ GameTime  = require '../../../tool/gametime'
 
 # fetching only characters positions and names
 swapDescriptions = (socket, viewer)->
-    TimeOfDay().done (description)->
+    TimeOfDay(viewer).done (description)->
         socket.emit 'descriptions.swap', description
 
 module.exports =
