@@ -15,7 +15,8 @@ All next will be easy. Just fallow this instructions.
 
 .. code-block:: bash
 
-    cd my/dir/alcarin-cacher
+    npm install -g coffee-script # optional, if you not have installed coffee-script yet
+    cd my/dir/alcarin-cacher    
     npm install
 
 When packages installtion is complete you can run project by:
