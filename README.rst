@@ -19,7 +19,7 @@ All next will be easy. Just fallow this instructions.
     cd my/dir/alcarin-cacher    
     npm install
 
-When packages installtion is complete you can run project by:
+When packages installation is complete you can run project by:
 
 .. code-block:: bash
 
