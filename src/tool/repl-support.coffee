@@ -25,13 +25,13 @@ toggle = ->
     active = not active
 
 restoreHook = ->
-    process.stdin.setRawMode true
+    process.stdin.setRawMode true if process.stdin.setRawMode
     process.stdin.resume()
 
 setHook = ->
     keypress process.stdin
 
-    process.stdin.setRawMode true
+    process.stdin.setRawMode true if process.stdin.setRawMode
     process.stdin.resume()
 
     process.stdin.on 'keypress', (ch, key)->
