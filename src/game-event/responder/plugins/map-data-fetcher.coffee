@@ -4,34 +4,43 @@ db     = require '../../../tool/mongo'
 log    = require '../../../logger'
 time   = require('../../../tool/gametime')
 Q      = require 'q'
+_      = require 'underscore'
 Config = require('../../../config').game.character
 
-map    = db.collection 'map'
+map   = db.collection 'map'
+plots = db.collection 'map.places.zones.plots'
 
 fetchTerrain = (socket, character)->
     center = character.loc
     radius = Math.round character.viewRadius()
-    conditions =
+
+    geoConditions =
         'loc':
             '$geoWithin':
                 # we calc territory in integers numbers
                 '$center': [ [Math.round(center.x), Math.round(center.y)], radius ]
-        # only fields with information about territory ("land")
-        'land': {'$exists': 1}
-    fields = ['land', 'loc']
+
+    # only fields with information about territory ("land")
+    mapConditions = _.extend {'land': {'$exists': 1}}, geoConditions
 
     fetchingTime = time.GameTime()
-    cursor = map.find conditions, fields
-    fetching = Q.ninvoke cursor, 'toArray'
-    result = Q.all([fetchingTime, fetching]).spread (gametime, fields)->
+
+    mapCursor = map.find mapConditions, ['land', 'loc']
+    fetchingMap = Q.ninvoke mapCursor, 'toArray'
+    plotsCursor = plots.find geoConditions
+    fetchingPlots = Q.ninvoke plotsCursor, 'toArray'
+
+    fetchAll = Q.all([fetchingTime, fetchingMap, fetchingPlots])
+    fetchAll.spread (gametime, fields, plots)->
+        plots = _.groupBy(plots, 'place')
         info =
             radius        : character.viewRadius()
             lighting      : gametime.lighting().intensity
             charViewRadius: character.charViewRadius()
             talkRadius    : Config.talkRadius
+        socket.emit 'terrain.swap', fields, plots, info
 
-        socket.emit 'terrain.swap', fields, info
-    result.done()
+    fetchAll.done()
 
 
 module.exports =

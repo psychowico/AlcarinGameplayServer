@@ -5,6 +5,7 @@ Q   = require 'q'
 
 Character = require '../../../game-object/character'
 chars = db.collection('map.chars')
+plots = db.collection('map.places.zones.plots')
 
 # promise of character representation
 # but this, who are only partialy visible
@@ -70,6 +71,48 @@ followCharacter = (socket, viewer, target)->
 
     socket.emit 'char.fetch', viewer
 
+# save in base information about place where char is occur now
+enterPlace = (socket, viewer, place)->
+    return if not db.ObjectId.isValid place
+    _place = db.ObjectId place
+    _loc =
+        x: Math.floor viewer.loc.x
+        y: Math.floor viewer.loc.y
+    conds =
+        place: _place
+        loc: _loc
+    fetching = Q.ninvoke plots, 'findOne', conds
+    fetching.done (plot)->
+        return if not plot?
+        viewer.loc.place = _place
+        viewer.save 'loc'
+
+# clear in base information about place where char was occur
+leavePlace = (socket, viewer)->
+    delete viewer.loc.place
+    viewer.save 'loc'
+
+# move to nearest plot of target place
+moveToPlace = (socket, viewer, target)->
+    return if not db.ObjectId.isValid target.id
+    conds = {place: db.ObjectId target.id}
+    cursor = plots.find conds, ['loc']
+    fetching = Q.ninvoke cursor, 'toArray'
+    fetching.done (plots)->
+        return if plots.length == 0
+        mindist = Number.MAX_VALUE
+        # console.log mindist
+        for plot in plots
+            dist = Math.min viewer.distanceTo(plot), mindist
+            if dist < mindist
+                mindist = dist
+                target = plot
+        viewer.move = viewer.move or {}
+        viewer.move.target = target.loc
+        viewer.save 'move.target'
+
+        socket.emit 'char.fetch', viewer
+
 
 # fetching only characters positions and names
 swapCharactersAround = (socket, viewer)->
@@ -96,4 +139,7 @@ module.exports =
     'fetch.char' : fetchCharacter
     'move.char'  : moveCharacter
     'follow.char': followCharacter
+    'enter-place': enterPlace
+    'leave-place': leavePlace
+    'move-to-place.char': moveToPlace
     'swap.chars' : swapCharactersAround
