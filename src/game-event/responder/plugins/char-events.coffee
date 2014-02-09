@@ -71,6 +71,27 @@ followCharacter = (socket, viewer, target)->
 
     socket.emit 'char.fetch', viewer
 
+# save in base information about place where char is occur now
+enterPlace = (socket, viewer, place)->
+    return if not db.ObjectId.isValid place
+    _place = db.ObjectId place
+    _loc =
+        x: Math.floor viewer.loc.x
+        y: Math.floor viewer.loc.y
+    conds =
+        place: _place
+        loc: _loc
+    fetching = Q.ninvoke plots, 'findOne', conds
+    fetching.done (plot)->
+        return if not plot?
+        viewer.loc.place = _place
+        viewer.save 'loc'
+
+# clear in base information about place where char was occur
+leavePlace = (socket, viewer)->
+    delete viewer.loc.place
+    viewer.save 'loc'
+
 # move to nearest plot of target place
 moveToPlace = (socket, viewer, target)->
     return if not db.ObjectId.isValid target.id
@@ -118,5 +139,7 @@ module.exports =
     'fetch.char' : fetchCharacter
     'move.char'  : moveCharacter
     'follow.char': followCharacter
+    'enter-place': enterPlace
+    'leave-place': leavePlace
     'move-to-place.char': moveToPlace
     'swap.chars' : swapCharactersAround
