@@ -5,6 +5,7 @@ Q   = require 'q'
 
 Character = require '../../../game-object/character'
 chars = db.collection('map.chars')
+plots = db.collection('map.places.zones.plots')
 
 # promise of character representation
 # but this, who are only partialy visible
@@ -70,6 +71,27 @@ followCharacter = (socket, viewer, target)->
 
     socket.emit 'char.fetch', viewer
 
+# move to nearest plot of target place
+moveToPlace = (socket, viewer, target)->
+    return if not db.ObjectId.isValid target.id
+    conds = {place: db.ObjectId target.id}
+    cursor = plots.find conds, ['loc']
+    fetching = Q.ninvoke cursor, 'toArray'
+    fetching.done (plots)->
+        return if plots.length == 0
+        mindist = Number.MAX_VALUE
+        # console.log mindist
+        for plot in plots
+            dist = Math.min viewer.distanceTo(plot), mindist
+            if dist < mindist
+                mindist = dist
+                target = plot
+        viewer.move = viewer.move or {}
+        viewer.move.target = target.loc
+        viewer.save 'move.target'
+
+        socket.emit 'char.fetch', viewer
+
 
 # fetching only characters positions and names
 swapCharactersAround = (socket, viewer)->
@@ -96,4 +118,5 @@ module.exports =
     'fetch.char' : fetchCharacter
     'move.char'  : moveCharacter
     'follow.char': followCharacter
+    'move-to-place.char': moveToPlace
     'swap.chars' : swapCharactersAround
