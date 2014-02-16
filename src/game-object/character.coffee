@@ -12,6 +12,8 @@ config       = require('../config').game.character
 NameResolver = require('./char-resolver')
 Tag          = require('../tool/tags-resolver')
 
+Place        = require './place'
+
 class Character
 
     constructor: (source)->
@@ -29,11 +31,15 @@ class Character
     transl: (group, tag, _default)->
         Tag.resolveTag "#{group}.#{tag}.#{@lang}", _default
 
-    memory: (gameEvent)->
+    memory: ->
         if not @_memory?
             Memory = require './character-memory'
             @_memory = new Memory @
         @_memory
+
+    place: ->
+        if not @loc.place? then return null
+        Place.fromId @loc.place
 
     squeeze: ->
         type: 'char'
