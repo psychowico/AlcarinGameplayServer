@@ -12,6 +12,7 @@ swapDescriptions = (socket, viewer)->
 # place description is for now - place name (named by char) and
 # others characters count description tag
 placeDescription = (socket, viewer)->
+    return false if not viewer.loc.place
     fetchingPlaceName = viewer.memory().place viewer.loc.place, false
     countingChars = viewer.place().charsCount()
     Q.all([fetchingPlaceName, countingChars]).spread (placeName, charsCount)->
