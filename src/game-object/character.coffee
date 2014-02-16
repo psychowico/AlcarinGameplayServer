@@ -25,6 +25,11 @@ class Character
         Broadcaster = require '../game-event/broadcaster'
         new Broadcaster @, gameEvent
 
+    memory: (gameEvent)->
+        if not @_memory?
+            @_memory = require './character-memory'
+        @_memory
+
     squeeze: ->
         type: 'char'
         id: @_id
