@@ -10,6 +10,7 @@ Q            = require 'q'
 config       = require('../config').game.character
 
 NameResolver = require('./char-resolver')
+Tag          = require('../tool/tags-resolver')
 
 class Character
 
@@ -25,9 +26,13 @@ class Character
         Broadcaster = require '../game-event/broadcaster'
         new Broadcaster @, gameEvent
 
+    transl: (group, tag, _default)->
+        Tag.resolveTag "#{group}.#{tag}.#{@lang}", _default
+
     memory: (gameEvent)->
         if not @_memory?
-            @_memory = require './character-memory'
+            Memory = require './character-memory'
+            @_memory = new Memory @
         @_memory
 
     squeeze: ->
