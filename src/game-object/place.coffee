@@ -1,18 +1,21 @@
 "use strict"
 
-db         = require '../tool/mongo'
 Q          = require 'q'
-# memory     = db.collection('map.chars.memory')
+db         = require '../tool/mongo'
+chars      = db.collection('map.chars')
 
 class Place
 
     @places: {}
 
-    constructor: ->
+    constructor: (@_id)->
+
+    charsCount: ->
+        Q.ninvoke chars, 'count', {'loc.place': @_id}
 
     @fromId: (id)->
         if not @places[id]?
-            @places[id] = new Place
+            @places[id] = new Place id
         return @places[id]
 
 
