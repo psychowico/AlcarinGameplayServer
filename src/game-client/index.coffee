@@ -55,7 +55,11 @@ class GameClient
 
     onClientEvent: (ev)=>
         return false if not @authorized
-        @responder.respond ev.name, ev.args if @responder.has ev.name
+        if @responder.has ev.name
+            @responder.respond ev.name, ev.args
+        else
+            log.info "Unrecognized client command: '#{ev.name}'."
+
 
     authorize: =>
         @authorized = true
