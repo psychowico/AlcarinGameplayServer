@@ -10,16 +10,16 @@ Q  = require 'q'
 db = require './mongo'
 
 # return promise of tag value (resolving to empty string if any problems)
-exports.resolveTag = (tag, default='')->
+exports.resolveTag = (tag, _default='')->
     deferred = Q.defer()
 
     fetching = Q.ninvoke db.collection('translations'), 'findOne', {_id: tag}
     fetching.done (result)->
         if not result?.val or result.val.length == 0
-            deferred.resolve default
+            deferred.resolve _default
         else
             deferred.resolve result?.val
-    fetching.fail -> deferred.resolve default
+    fetching.fail -> deferred.resolve _default
 
     deferred.promise
 
